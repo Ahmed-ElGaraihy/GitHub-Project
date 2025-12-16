@@ -4,20 +4,23 @@ on:
   push:
     branches:
       - main
-  pull_request:
-    branches:
-      - main
 
 jobs:
   test:
-    name: Check Button Exists
+    name: Check Specs Link and Section
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - name: Test for button
+      - name: Test for Specs Link
         run: |
-          if ! grep -q "<button" index.html; then
-            echo "Button not found in index.html!"
+          if ! grep -q 'href="#spec"' index.html; then
+            echo "Specs link not found!"
+            exit 1
+          fi
+      - name: Test for Tech Specs Section
+        run: |
+          if ! grep -q 'id="spec"' index.html; then
+            echo "Tech Specs section not found!"
             exit 1
           fi
 
@@ -33,13 +36,18 @@ jobs:
           cp index.html style.css *.png *.jpg build/
 
   deploy:
-    name: Deploy to GitHub Pages
+    name: Deploy to main
     runs-on: ubuntu-latest
     needs: build
     steps:
       - uses: actions/checkout@v3
-      - name: Deploy
-        uses: peaceiris/actions-gh-pages@v3
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./build
+      - name: Copy build to root
+        run: |
+          cp -r build/* .
+      - name: Commit & Push
+        run: |
+          git config --global user.name "Ahmed Ibrahim"
+          git config --global user.email "your_email@example.com"
+          git add .
+          git commit -m "Deploy updates"
+          git push origin main
