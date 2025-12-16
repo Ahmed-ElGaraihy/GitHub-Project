@@ -1,13 +1,45 @@
-name: First Workflow Test
+name: Website CI/CD
 
 on:
   push:
     branches:
       - main
+  pull_request:
+    branches:
+      - main
 
 jobs:
   test:
+    name: Check Button Exists
     runs-on: ubuntu-latest
     steps:
-      - name: Say hello
-        run: echo "Workflow is working 🎉"
+      - uses: actions/checkout@v3
+      - name: Test for button
+        run: |
+          if ! grep -q "<button" index.html; then
+            echo "Button not found in index.html!"
+            exit 1
+          fi
+
+  build:
+    name: Prepare for Deployment
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - uses: actions/checkout@v3
+      - name: Copy files to build folder
+        run: |
+          mkdir -p build
+          cp index.html style.css *.png *.jpg build/
+
+  deploy:
+    name: Deploy to GitHub Pages
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v3
+      - name: Deploy
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./build
