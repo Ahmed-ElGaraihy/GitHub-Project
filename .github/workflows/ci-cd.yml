@@ -35,8 +35,7 @@ jobs:
         run: |
           mkdir -p build
           cp index.html style.css *.png *.jpg build/ || true
-          ls build/  # للتأكد من وجود الملفات
-
+          ls build/ 
   deploy:
     name: Deploy to GitHub Pages
     runs-on: ubuntu-latest
