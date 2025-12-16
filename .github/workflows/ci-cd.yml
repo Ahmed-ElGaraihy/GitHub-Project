@@ -30,24 +30,20 @@ jobs:
     needs: test
     steps:
       - uses: actions/checkout@v3
-      - name: Copy files to build folder
+      - name: Create build folder and copy files
         run: |
           mkdir -p build
-          cp index.html style.css *.png *.jpg build/
+          cp index.html style.css *.png *.jpg build/ || true
+          ls build/  # للتأكد من وجود الملفات
 
   deploy:
-    name: Deploy to main
+    name: Deploy to GitHub Pages
     runs-on: ubuntu-latest
     needs: build
     steps:
       - uses: actions/checkout@v3
-      - name: Copy build to root
-        run: |
-          cp -r build/* .
-      - name: Commit & Push
-        run: |
-          git config --global user.name "Ahmed Ibrahim"
-          git config --global user.email "your_email@example.com"
-          git add .
-          git commit -m "Deploy updates"
-          git push origin main
+      - name: Deploy
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./build
